@@ -8,7 +8,9 @@
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
     "dev:watch": "nodemon --exec ts-node src/index.ts",
-    "token": "ts-node src/auth/token-manager.ts"
+    "token": "ts-node src/auth/token-manager.ts",
+    "generate": "ts-node src/index.ts",
+    "generate:single": "ts-node src/index.ts"
   },
   "keywords": ["igdb", "twitch", "api", "typescript", "markdown"],
   "author": "",

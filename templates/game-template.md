@@ -12,10 +12,10 @@ publisher:
 director:
 release: YYYY-MM-DD
 ---
-# Gameplay 
+# Gameplay
 
 # Synopsis 
 
 # Review 
 
-## Notes 
+## Notes

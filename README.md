@@ -36,6 +36,23 @@ A TypeScript project that integrates with IGDB (Internet Game Database) and Twit
 
 ## Usage
 
+### Template Generation
+
+Generate markdown files for all games in your CSV:
+```bash
+npm run generate
+```
+
+Generate a template for a single game:
+```bash
+npm run generate:single "Game Name"
+```
+
+Example:
+```bash
+npm run generate:single "Persona 5"
+```
+
 ### Token Management
 
 Test the token manager directly:
@@ -70,13 +87,20 @@ npm start
 ```
 ├── src/
 │   ├── auth/
-│   │   └── token-manager.ts    # Twitch API token management
+│   │   └── token-manager.ts      # Twitch API token management
+│   ├── services/
+│   │   ├── igdb-client.ts        # IGDB API client
+│   │   └── template-generator.ts # Markdown template generator
 │   ├── types/
-│   │   └── igdb.ts            # IGDB API type definitions
-│   └── index.ts               # Main application entry point
-├── templates/                 # Markdown templates
-├── dist/                      # Compiled JavaScript output
-└── .token.json               # Cached access token (auto-generated)
+│   │   └── igdb.ts              # IGDB API type definitions
+│   ├── utils/
+│   │   └── csv-parser.ts        # CSV parsing utilities
+│   └── index.ts                 # Main application entry point
+├── templates/                   # Markdown templates
+├── generated-games/             # Generated markdown files (auto-created)
+├── games.csv                    # Your game collection data
+├── dist/                        # Compiled JavaScript output
+└── .token.json                 # Cached access token (auto-generated)
 ```
 
 ## API Integration

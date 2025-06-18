@@ -20,6 +20,7 @@ export interface IGDBGame {
   game_modes?: number[];
   themes?: number[];
   player_perspectives?: number[];
+  game_engines?: number[];
   url?: string;
   slug?: string;
 }
@@ -87,6 +88,31 @@ export interface IGDBWebsite {
   url: string;
 }
 
+// Additional interfaces for expanded data
+export interface IGDBGameMode {
+  id: number;
+  name: string;
+  slug?: string;
+}
+
+export interface IGDBTheme {
+  id: number;
+  name: string;
+  slug?: string;
+}
+
+export interface IGDBPlayerPerspective {
+  id: number;
+  name: string;
+  slug?: string;
+}
+
+export interface IGDBGameEngine {
+  id: number;
+  name: string;
+  slug?: string;
+}
+
 // Expanded game data with resolved references
 export interface ExpandedGameData {
   game: IGDBGame;
@@ -97,6 +123,10 @@ export interface ExpandedGameData {
   companies?: IGDBCompany[];
   involvedCompanies?: IGDBInvolvedCompany[];
   websites?: IGDBWebsite[];
+  gameModes?: IGDBGameMode[];
+  themes?: IGDBTheme[];
+  playerPerspectives?: IGDBPlayerPerspective[];
+  gameEngines?: IGDBGameEngine[];
 }
 
 // Template context for markdown generation
