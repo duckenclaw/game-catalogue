@@ -1,0 +1,26 @@
+{
+  "name": "game-catalogue",
+  "version": "1.0.0",
+  "description": "A TypeScript project to create markdown files from IGDB API data using templates",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "dev:watch": "nodemon --exec ts-node src/index.ts",
+    "token": "ts-node src/auth/token-manager.ts"
+  },
+  "keywords": ["igdb", "twitch", "api", "typescript", "markdown"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "nodemon": "^3.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.0"
+  }
+} 
