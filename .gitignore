@@ -2,3 +2,5 @@
 .token.json
 node_modules/
 dist/
+unprocessed-games.csv
+games/*

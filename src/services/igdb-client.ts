@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { TokenManager } from '../auth/token-manager';
+import { logger } from '../utils/logger';
 import {
   IGDBGame,
   IGDBGenre,
@@ -58,10 +59,16 @@ export class IGDBClient {
     `;
 
     try {
+      logger.request(`POST ${this.client.defaults.baseURL}/games`);
+      logger.info(`Searching IGDB for game: "${query}" (limit: ${limit})`);
+      logger.debug(`Query: ${searchQuery.trim().replace(/\s+/g, ' ')}`);
+      
       const response = await this.client.post('/games', searchQuery);
+      logger.success(`Found ${response.data.length} games matching "${query}"`);
+      
       return response.data;
     } catch (error) {
-      console.error(`Failed to search games for "${query}":`, error);
+      logger.error(`Failed to search games for "${query}":`, error);
       throw error;
     }
   }

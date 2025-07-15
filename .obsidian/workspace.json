@@ -1,0 +1,178 @@
+{
+  "main": {
+    "id": "fb222fd2ca532d01",
+    "type": "split",
+    "children": [
+      {
+        "id": "80a3367f2ecca4a3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "bc49ede05da20fa3",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "games/Aliens-Colonial-Marines.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Aliens-Colonial-Marines"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "25e5dfed99e5f86d",
+    "type": "split",
+    "children": [
+      {
+        "id": "3d88712e42dd13fb",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "48469f8d58907bbc",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "81ba5b7439d90ee5",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "0ba656871d250593",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "55736b3a39a06020",
+    "type": "split",
+    "children": [
+      {
+        "id": "a88a311bf5d05d1c",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "a516c2209685c2e0",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "games/Aliens-Colonial-Marines.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Aliens-Colonial-Marines"
+            }
+          },
+          {
+            "id": "2cad35c456e5bf5c",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "games/Aliens-Colonial-Marines.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Aliens-Colonial-Marines"
+            }
+          },
+          {
+            "id": "34bc9d941d5a778a",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "577f9992a3d30ede",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "games/Aliens-Colonial-Marines.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Aliens-Colonial-Marines"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "bc49ede05da20fa3",
+  "lastOpenFiles": [
+    "games/Aer-Memories-of-Old.md",
+    "games/A-Plague-Tale-Requiem.md",
+    "games/A-Hat-In-Time.md",
+    "games/420BLAZEIT-2.md"
+  ]
+}

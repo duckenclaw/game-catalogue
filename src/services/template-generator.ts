@@ -1,8 +1,9 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { IGDBClient } from './igdb-client';
-import { CSVParser, GameCSVEntry } from '../utils/csv-parser';
+import { CSVParser, GameCSVEntry, UnprocessedGame } from '../utils/csv-parser';
 import { ExpandedGameData, IGDBGame } from '../types/igdb';
+import { logger } from '../utils/logger';
 
 export interface TemplateData {
   title: string;
@@ -29,23 +30,40 @@ export class TemplateGenerator {
   }
 
   /**
+   * Generates a random delay between min and max milliseconds
+   */
+  private async randomDelay(minSeconds: number = 5, maxSeconds: number = 30): Promise<void> {
+    const minMs = minSeconds * 1000;
+    const maxMs = maxSeconds * 1000;
+    const delay = Math.floor(Math.random() * (maxMs - minMs + 1)) + minMs;
+    logger.info(`Rate limit delay: waiting ${Math.round(delay / 1000)} seconds before next request`);
+    await new Promise(resolve => setTimeout(resolve, delay));
+  }
+
+  /**
    * Generates markdown files for all games in the CSV
    */
-  async generateAllGameTemplates(csvPath: string = 'games.csv', outputDir: string = 'generated-games'): Promise<void> {
-    console.log('📖 Reading games from CSV...');
+  async generateAllGameTemplates(csvPath: string = 'games.csv', outputDir: string = 'games'): Promise<void> {
+    logger.info('Starting batch game template generation');
+    logger.info(`Reading games from CSV: ${csvPath}`);
     const games = await CSVParser.parseGamesCSV(csvPath);
     
-    console.log(`Found ${games.length} games in CSV`);
+    logger.info(`Found ${games.length} games in CSV file`);
     
     // Create output directory
     await fs.mkdir(outputDir, { recursive: true });
+    logger.info(`Output directory: ${outputDir}`);
     
     let processedCount = 0;
     const failedGames: { name: string; error: string }[] = [];
+    const unprocessedGames: UnprocessedGame[] = [];
     
-    for (const game of games) {
+    for (let i = 0; i < games.length; i++) {
+      const game = games[i];
+      
       try {
-        console.log(`\n🎮 Processing: ${game.name}`);
+        logger.info(`Processing game ${i + 1}/${games.length}: "${game.name}"`);
+        logger.debug(`Game details: ${game.status} on ${game.platform}`);
         
         const templateData = await this.generateTemplateData(game);
         if (templateData) {
@@ -54,34 +72,51 @@ export class TemplateGenerator {
           const filePath = path.join(outputDir, filename);
           
           await fs.writeFile(filePath, markdown);
-          console.log(`✅ Generated: ${filename}`);
+          logger.success(`Generated markdown file: ${filename}`);
           processedCount++;
         } else {
-          console.log(`❌ No IGDB data found for: ${game.name}`);
-          failedGames.push({ name: game.name, error: 'No IGDB data found' });
+          logger.warn(`No IGDB data found for: ${game.name}`);
+          unprocessedGames.push({
+            name: game.name,
+            status: game.status,
+            platform: game.platform,
+            notes: game.notes,
+            reason: 'No IGDB data found'
+          });
         }
         
-        // Add a small delay to avoid hitting API rate limits
-        await new Promise(resolve => setTimeout(resolve, 200));
+        // Add random delay between requests (except for the last game)
+        if (i < games.length - 1) {
+          await this.randomDelay(5, 30);
+        }
         
       } catch (error) {
-        console.error(`❌ Failed to process ${game.name}:`, error);
-        failedGames.push({ 
-          name: game.name, 
-          error: error instanceof Error ? error.message : 'Unknown error' 
+        logger.error(`Failed to process ${game.name}:`, error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        failedGames.push({ name: game.name, error: errorMessage });
+        
+        unprocessedGames.push({
+          name: game.name,
+          status: game.status,
+          platform: game.platform,
+          notes: game.notes,
+          reason: `Error: ${errorMessage}`
         });
       }
     }
     
-    console.log(`\n📊 Summary:`);
-    console.log(`- Successfully processed: ${processedCount} games`);
-    console.log(`- Failed: ${failedGames.length} games`);
+    // Save unprocessed games to CSV
+    if (unprocessedGames.length > 0) {
+      await CSVParser.saveUnprocessedGames(unprocessedGames);
+    }
     
-    if (failedGames.length > 0) {
-      console.log('\n❌ Failed games:');
-      failedGames.forEach(game => {
-        console.log(`  - ${game.name}: ${game.error}`);
-      });
+    logger.info('Batch processing complete');
+    logger.info(`Successfully processed: ${processedCount} games`);
+    logger.info(`Unprocessed (no IGDB data): ${unprocessedGames.filter(g => g.reason === 'No IGDB data found').length} games`);
+    logger.info(`Failed (other errors): ${unprocessedGames.filter(g => g.reason.startsWith('Error:')).length} games`);
+    
+    if (unprocessedGames.length > 0) {
+      logger.info('Unprocessed games saved to: unprocessed-games.csv');
     }
   }
 
@@ -90,28 +125,35 @@ export class TemplateGenerator {
    */
   async generateTemplateData(csvGame: GameCSVEntry): Promise<TemplateData | null> {
     try {
+      logger.debug(`Generating template data for: ${csvGame.name}`);
+      
       // Search for the game in IGDB
       const searchResults = await this.igdbClient.searchGames(csvGame.name, 5);
       
       if (searchResults.length === 0) {
+        logger.debug(`No search results found for: ${csvGame.name}`);
         return null;
       }
       
       // Find the best match
       const bestMatch = this.findBestGameMatch(csvGame.name, searchResults);
       if (!bestMatch) {
+        logger.debug(`No suitable match found for: ${csvGame.name}`);
         return null;
       }
+      
+      logger.debug(`Best match for "${csvGame.name}": "${bestMatch.name}" (ID: ${bestMatch.id})`);
       
       // Get expanded data
       const expandedData = await this.igdbClient.getExpandedGameData(bestMatch.id);
       if (!expandedData) {
+        logger.debug(`No expanded data available for: ${bestMatch.name}`);
         return null;
       }
       
       return this.mapToTemplateData(csvGame, expandedData);
     } catch (error) {
-      console.error(`Error generating template data for ${csvGame.name}:`, error);
+      logger.error(`Error generating template data for ${csvGame.name}:`, error);
       return null;
     }
   }
@@ -300,31 +342,53 @@ Leave empty
    */
   private sanitizeFilename(name: string): string {
     return name
-      .replace(/[^\w\s-]/g, '') // Remove special characters except spaces and hyphens
+      .replace(/[<>:"/\\|?*]/g, '') // Remove filesystem-unsafe characters
+      .replace(/[^\w\s\-_.]/g, '') // Keep only alphanumeric, spaces, hyphens, underscores, dots
       .replace(/\s+/g, '-') // Replace spaces with hyphens
       .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-      .toLowerCase()
+      .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
       .trim();
   }
 
   /**
-   * Generates a single game template
+   * Generates a single game template and optionally saves it to file
    */
-  async generateSingleGameTemplate(gameName: string, csvPath: string = 'games.csv'): Promise<string | null> {
+  async generateSingleGameTemplate(gameName: string, csvPath: string = 'games.csv', saveToFile: boolean = false): Promise<string | null> {
     const games = await CSVParser.parseGamesCSV(csvPath);
     const csvGame = CSVParser.findGameByName(games, gameName);
     
     if (!csvGame) {
-      console.log(`Game "${gameName}" not found in CSV`);
+      logger.warn(`Game "${gameName}" not found in CSV`);
       return null;
     }
     
     const templateData = await this.generateTemplateData(csvGame);
     if (!templateData) {
-      console.log(`No IGDB data found for "${gameName}"`);
+      logger.warn(`No IGDB data found for "${gameName}"`);
       return null;
     }
     
-    return await this.generateMarkdown(templateData);
+    const markdown = await this.generateMarkdown(templateData);
+    
+    if (saveToFile) {
+      const outputDir = 'games';
+      await fs.mkdir(outputDir, { recursive: true });
+      
+      const filename = this.sanitizeFilename(csvGame.name) + '.md';
+      const filePath = path.join(outputDir, filename);
+      
+      await fs.writeFile(filePath, markdown);
+      logger.success(`Saved markdown file: ${filePath}`);
+    }
+    
+    return markdown;
+  }
+
+  /**
+   * Generates and saves a single game template to file
+   */
+  async generateAndSaveSingleGame(gameName: string, csvPath: string = 'games.csv'): Promise<boolean> {
+    const markdown = await this.generateSingleGameTemplate(gameName, csvPath, true);
+    return markdown !== null;
   }
 } 

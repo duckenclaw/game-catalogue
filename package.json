@@ -10,7 +10,8 @@
     "dev:watch": "nodemon --exec ts-node src/index.ts",
     "token": "ts-node src/auth/token-manager.ts",
     "generate": "ts-node src/index.ts",
-    "generate:single": "ts-node src/index.ts"
+    "generate:single": "ts-node src/index.ts",
+    "generate:save": "ts-node src/index.ts"
   },
   "keywords": ["igdb", "twitch", "api", "typescript", "markdown"],
   "author": "",
@@ -23,6 +24,7 @@
   },
   "dependencies": {
     "axios": "^1.6.0",
-    "dotenv": "^16.3.0"
+    "dotenv": "^16.3.0",
+    "winston": "^3.11.0"
   }
 } 

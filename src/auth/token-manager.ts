@@ -2,6 +2,7 @@ import axios from 'axios';
 import * as dotenv from 'dotenv';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { logger } from '../utils/logger';
 
 // Load environment variables
 dotenv.config();
@@ -45,7 +46,10 @@ class TokenManager {
     });
 
     try {
-      console.log('Requesting new access token from Twitch...');
+      logger.request(`POST ${url}`);
+      logger.info('Requesting new access token from Twitch API');
+      logger.debug(`Request parameters: grant_type=${grantType}, client_id=${clientId.substring(0, 8)}...`);
+      
       const response = await axios.post(url, params, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
@@ -53,12 +57,13 @@ class TokenManager {
       });
 
       const tokenData: TwitchTokenResponse = response.data;
-      console.log(`✅ Successfully obtained access token (expires in ${tokenData.expires_in} seconds)`);
+      logger.success(`Access token obtained successfully (expires in ${tokenData.expires_in} seconds)`);
       
       return tokenData;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error('❌ Failed to obtain access token:', error.response?.data || error.message);
+        logger.error(`Token request failed: ${error.response?.status} ${error.response?.statusText}`);
+        logger.debug('Error details:', error.response?.data || error.message);
         throw new Error(`Token request failed: ${error.response?.status} ${error.response?.statusText}`);
       }
       throw error;
@@ -77,9 +82,9 @@ class TokenManager {
 
     try {
       await fs.writeFile(this.tokenFilePath, JSON.stringify(tokenData, null, 2));
-      console.log(`💾 Token saved to ${this.tokenFilePath}`);
+      logger.info(`Token saved to ${this.tokenFilePath}`);
     } catch (error) {
-      console.error('❌ Failed to save token to file:', error);
+      logger.error('Failed to save token to file:', error);
       throw error;
     }
   }
@@ -95,14 +100,15 @@ class TokenManager {
       // Check if token is still valid (with 5-minute buffer)
       const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
       if (Date.now() < (tokenData.expires_at - bufferTime)) {
-        console.log('✅ Valid token found in file');
+        const expiresIn = Math.round((tokenData.expires_at - Date.now()) / 1000 / 60);
+        logger.info(`Valid token found in file (expires in ${expiresIn} minutes)`);
         return tokenData;
       } else {
-        console.log('⚠️ Token in file has expired');
+        logger.warn('Token in file has expired');
         return null;
       }
     } catch (error) {
-      console.log('ℹ️ No valid token file found');
+      logger.info('No valid token file found');
       return null;
     }
   }
@@ -127,7 +133,7 @@ class TokenManager {
    * Forces a refresh of the access token
    */
   async refreshToken(): Promise<string> {
-    console.log('🔄 Forcing token refresh...');
+    logger.info('Forcing token refresh');
     const newToken = await this.requestAccessToken();
     await this.saveTokenToFile(newToken);
     return newToken.access_token;
@@ -149,10 +155,10 @@ async function main() {
       token = await tokenManager.getValidToken();
     }
     
-    console.log('\n🎉 Access token ready!');
-    console.log(`Token: ${token.substring(0, 20)}...`);
+    logger.success('Access token ready');
+    logger.info(`Token preview: ${token.substring(0, 20)}...`);
   } catch (error) {
-    console.error('💥 Token management failed:', error);
+    logger.error('Token management failed:', error);
     process.exit(1);
   }
 }

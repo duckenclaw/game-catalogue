@@ -1,11 +1,20 @@
 import { promises as fs } from 'fs';
 import path from 'path';
+import { logger } from './logger';
 
 export interface GameCSVEntry {
   name: string;
   status: string;
   platform: string;
   notes?: string;
+}
+
+export interface UnprocessedGame {
+  name: string;
+  status: string;
+  platform: string;
+  notes?: string;
+  reason: string;
 }
 
 export class CSVParser {
@@ -31,7 +40,43 @@ export class CSVParser {
       
       return games;
     } catch (error) {
-      console.error('Failed to parse games.csv:', error);
+      logger.error('Failed to parse games.csv:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Saves unprocessed games to a CSV file
+   */
+  static async saveUnprocessedGames(unprocessedGames: UnprocessedGame[], filePath: string = 'unprocessed-games.csv'): Promise<void> {
+    if (unprocessedGames.length === 0) {
+      return;
+    }
+
+    try {
+      const header = 'name,status,platform,notes,reason\n';
+      const csvLines = unprocessedGames.map(game => {
+        const escapeCsvField = (field: string) => {
+          if (field.includes(',') || field.includes('"') || field.includes('\n')) {
+            return `"${field.replace(/"/g, '""')}"`;
+          }
+          return field;
+        };
+
+        return [
+          escapeCsvField(game.name),
+          escapeCsvField(game.status),
+          escapeCsvField(game.platform),
+          escapeCsvField(game.notes || ''),
+          escapeCsvField(game.reason)
+        ].join(',');
+      });
+
+      const csvContent = header + csvLines.join('\n');
+      await fs.writeFile(filePath, csvContent);
+      logger.info(`Saved ${unprocessedGames.length} unprocessed games to ${filePath}`);
+    } catch (error) {
+      logger.error('Failed to save unprocessed games CSV:', error);
       throw error;
     }
   }
